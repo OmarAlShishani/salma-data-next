@@ -1,0 +1,483 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model intents {
+  id                             Int                              @id @default(autoincrement())
+  normalized_name                String                           @unique(map: "intent_normalized_name_UNIQUE") @db.VarChar(450)
+  name                           String                           @unique(map: "intent_name_UNIQUE") @db.VarChar(450)
+  added_by                       Int
+  active                         Boolean                          @default(true)
+  added_date                     DateTime                         @default(now()) @db.DateTime(0)
+  modified_by                    Int?
+  modified_date                  DateTime?                        @default(now()) @db.DateTime(0)
+  deleted_by                     Int?
+  deleted_date                   DateTime?                        @default(now()) @db.DateTime(0)
+  intent_entities                intent_entities[]
+  intent_flows                   intent_flows[]
+  intent_keyword                 intent_keyword[]
+  intent_keyword_flow            intent_keyword_flow[]
+  intent_permission              intent_permission[]
+  intent_testing_phrase_expected intent_testing_phrase_expected[]
+  intent_testing_phrases         intent_testing_phrases[]
+  intent_training_phrases        intent_training_phrases[]
+  user                           user                             @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intents_1")
+  user_intents_modified_byTouser user?                            @relation("intents_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intents_2")
+  user_intents_deleted_byTouser  user?                            @relation("intents_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intents_3")
+
+  @@index([added_by], map: "fk_intents_1_idx")
+  @@index([modified_by], map: "fk_intents_2_idx")
+  @@index([deleted_by], map: "fk_intents_3_idx")
+}
+
+model smalltalk_permission {
+  id                                         Int        @id @default(autoincrement())
+  user_id                                    Int
+  smalltalk_id                               Int
+  granted_by                                 Int
+  granted_date                               DateTime   @default(now()) @db.DateTime(0)
+  user_smalltalk_permission_user_idTouser    user       @relation("smalltalk_permission_user_idTouser", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_permission_1")
+  user_smalltalk_permission_granted_byTouser user       @relation("smalltalk_permission_granted_byTouser", fields: [granted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_permission_2")
+  smalltalks                                 smalltalks @relation(fields: [smalltalk_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_permission_3")
+
+  @@unique([user_id, smalltalk_id], map: "user_smalltalk_UNIQUE")
+  @@index([user_id], map: "fk_smalltalk_permission_1_idx")
+  @@index([granted_by], map: "fk_smalltalk_permission_2_idx")
+  @@index([smalltalk_id], map: "fk_smalltalk_permission_3_idx")
+}
+
+model smalltalk_testing_phrases {
+  id                                               Int        @id @default(autoincrement())
+  smalltalk_id                                     Int
+  normalized_text                                  String     @db.Text
+  text                                             String     @db.Text
+  added_by                                         Int
+  added_date                                       DateTime   @default(now()) @db.DateTime(0)
+  active                                           Boolean    @default(true)
+  modified_by                                      Int?
+  modified_date                                    DateTime?  @default(now()) @db.DateTime(0)
+  deleted_by                                       Int?
+  deleted_date                                     DateTime?  @default(now()) @db.DateTime(0)
+  user                                             user       @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_testing_phrases_1")
+  smalltalks                                       smalltalks @relation(fields: [smalltalk_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_testing_phrases_2")
+  user_smalltalk_testing_phrases_modified_byTouser user?      @relation("smalltalk_testing_phrases_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_testing_phrases_3")
+  user_smalltalk_testing_phrases_deleted_byTouser  user?      @relation("smalltalk_testing_phrases_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_testing_phrases_4")
+
+  @@index([added_by], map: "fk_smalltalk_testing_phrases_1_idx")
+  @@index([smalltalk_id], map: "fk_smalltalk_testing_phrases_2_idx")
+  @@index([modified_by], map: "fk_smalltalk_testing_phrases_3_idx")
+  @@index([deleted_by], map: "fk_smalltalk_testing_phrases_4_idx")
+}
+
+model smalltalk_training_phrases {
+  id                                                Int        @id @default(autoincrement())
+  smalltalk_id                                      Int
+  normalized_text                                   String     @db.Text
+  text                                              String     @db.Text
+  added_by                                          Int
+  added_date                                        DateTime   @default(now()) @db.DateTime(0)
+  active                                            Boolean    @default(true)
+  modified_by                                       Int?
+  modified_date                                     DateTime?  @default(now()) @db.DateTime(0)
+  deleted_by                                        Int?
+  deleted_date                                      DateTime?  @default(now()) @db.DateTime(0)
+  smalltalks                                        smalltalks @relation(fields: [smalltalk_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_training_phrases_1")
+  user                                              user       @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_training_phrases_2")
+  user_smalltalk_training_phrases_modified_byTouser user?      @relation("smalltalk_training_phrases_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_training_phrases_3")
+  user_smalltalk_training_phrases_deleted_byTouser  user?      @relation("smalltalk_training_phrases_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalk_training_phrases_4")
+
+  @@index([smalltalk_id], map: "fk_smalltalk_training_phrases_1_idx")
+  @@index([added_by], map: "fk_smalltalk_training_phrases_2_idx")
+  @@index([modified_by], map: "fk_smalltalk_training_phrases_3_idx")
+  @@index([deleted_by], map: "fk_smalltalk_training_phrases_4_idx")
+}
+
+model smalltalks {
+  id                                Int                          @id @default(autoincrement())
+  normalized_name                   String                       @unique(map: "smalltalk_normalized_name_UNIQUE") @db.VarChar(450)
+  name                              String                       @unique(map: "smalltalk_name_UNIQUE") @db.VarChar(450)
+  added_by                          Int
+  active                            Boolean                      @default(true)
+  added_date                        DateTime                     @default(now()) @db.DateTime(0)
+  modified_by                       Int?
+  modified_date                     DateTime?                    @default(now()) @db.DateTime(0)
+  deleted_by                        Int?
+  deleted_date                      DateTime?                    @default(now()) @db.DateTime(0)
+  smalltalk_permission              smalltalk_permission[]
+  smalltalk_testing_phrases         smalltalk_testing_phrases[]
+  smalltalk_training_phrases        smalltalk_training_phrases[]
+  user                              user                         @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalks_1")
+  user_smalltalks_modified_byTouser user?                        @relation("smalltalks_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalks_2")
+  user_smalltalks_deleted_byTouser  user?                        @relation("smalltalks_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_smalltalks_3")
+
+  @@index([added_by], map: "fk_smalltalks_1_idx")
+  @@index([modified_by], map: "fk_smalltalks_2_idx")
+  @@index([deleted_by], map: "fk_smalltalks_3_idx")
+}
+
+model user {
+  id                                                                              Int                              @id @default(autoincrement())
+  name                                                                            String                           @db.VarChar(450)
+  username                                                                        String                           @unique(map: "username_UNIQUE") @db.VarChar(450)
+  email                                                                           String                           @unique(map: "email_UNIQUE") @db.VarChar(450)
+  password                                                                        String                           @db.VarChar(450)
+  user_type                                                                       user_user_type                   @default(USER)
+  active                                                                          Boolean                          @default(true)
+  added_by                                                                        Int?
+  added_date                                                                      DateTime                         @default(now()) @db.DateTime(0)
+  blocked_by                                                                      Int?
+  block_date                                                                      DateTime?                        @default(now()) @db.DateTime(0)
+  block_reason                                                                    String?                          @db.Text
+  enities_permission_enities_permission_user_idTouser                             enities_permission[]             @relation("enities_permission_user_idTouser")
+  enities_permission_enities_permission_granted_byTouser                          enities_permission[]             @relation("enities_permission_granted_byTouser")
+  entities                                                                        entities[]
+  entities_entities_modified_byTouser                                             entities[]                       @relation("entities_modified_byTouser")
+  entities_entities_deleted_byTouser                                              entities[]                       @relation("entities_deleted_byTouser")
+  entity_value                                                                    entity_value[]
+  entity_value_entity_value_modified_byTouser                                     entity_value[]                   @relation("entity_value_modified_byTouser")
+  entity_value_entity_value_deleted_byTouser                                      entity_value[]                   @relation("entity_value_deleted_byTouser")
+  entity_value_synonym                                                            entity_value_synonym[]
+  entity_value_synonym_entity_value_synonym_modified_byTouser                     entity_value_synonym[]           @relation("entity_value_synonym_modified_byTouser")
+  entity_value_synonym_entity_value_synonym_deleted_byTouser                      entity_value_synonym[]           @relation("entity_value_synonym_deleted_byTouser")
+  intent_entities                                                                 intent_entities[]
+  intent_entities_intent_entities_modified_byTouser                               intent_entities[]                @relation("intent_entities_modified_byTouser")
+  intent_entities_intent_entities_deleted_byTouser                                intent_entities[]                @relation("intent_entities_deleted_byTouser")
+  intent_flows                                                                    intent_flows[]
+  intent_flows_intent_flows_modified_byTouser                                     intent_flows[]                   @relation("intent_flows_modified_byTouser")
+  intent_flows_intent_flows_deleted_byTouser                                      intent_flows[]                   @relation("intent_flows_deleted_byTouser")
+  intent_keyword                                                                  intent_keyword[]
+  intent_keyword_intent_keyword_modified_byTouser                                 intent_keyword[]                 @relation("intent_keyword_modified_byTouser")
+  intent_keyword_intent_keyword_deleted_byTouser                                  intent_keyword[]                 @relation("intent_keyword_deleted_byTouser")
+  intent_keyword_flow                                                             intent_keyword_flow[]
+  intent_keyword_flow_intent_keyword_flow_modified_byTouser                       intent_keyword_flow[]            @relation("intent_keyword_flow_modified_byTouser")
+  intent_keyword_flow_intent_keyword_flow_deleted_byTouser                        intent_keyword_flow[]            @relation("intent_keyword_flow_deleted_byTouser")
+  intent_permission_intent_permission_user_idTouser                               intent_permission[]              @relation("intent_permission_user_idTouser")
+  intent_permission_intent_permission_granted_byTouser                            intent_permission[]              @relation("intent_permission_granted_byTouser")
+  intent_testing_phrase_expected                                                  intent_testing_phrase_expected[]
+  intent_testing_phrase_expected_intent_testing_phrase_expected_modified_byTouser intent_testing_phrase_expected[] @relation("intent_testing_phrase_expected_modified_byTouser")
+  intent_testing_phrase_expected_intent_testing_phrase_expected_deleted_byTouser  intent_testing_phrase_expected[] @relation("intent_testing_phrase_expected_deleted_byTouser")
+  intent_testing_phrases                                                          intent_testing_phrases[]
+  intent_testing_phrases_intent_testing_phrases_modified_byTouser                 intent_testing_phrases[]         @relation("intent_testing_phrases_modified_byTouser")
+  intent_testing_phrases_intent_testing_phrases_deleted_byTouser                  intent_testing_phrases[]         @relation("intent_testing_phrases_deleted_byTouser")
+  intent_training_phrases                                                         intent_training_phrases[]
+  intent_training_phrases_intent_training_phrases_modified_byTouser               intent_training_phrases[]        @relation("intent_training_phrases_modified_byTouser")
+  intent_training_phrases_intent_training_phrases_deleted_byTouser                intent_training_phrases[]        @relation("intent_training_phrases_deleted_byTouser")
+  intents                                                                         intents[]
+  intents_intents_modified_byTouser                                               intents[]                        @relation("intents_modified_byTouser")
+  intents_intents_deleted_byTouser                                                intents[]                        @relation("intents_deleted_byTouser")
+  smalltalk_permission_smalltalk_permission_user_idTouser                         smalltalk_permission[]           @relation("smalltalk_permission_user_idTouser")
+  smalltalk_permission_smalltalk_permission_granted_byTouser                      smalltalk_permission[]           @relation("smalltalk_permission_granted_byTouser")
+  smalltalk_testing_phrases                                                       smalltalk_testing_phrases[]
+  smalltalk_testing_phrases_smalltalk_testing_phrases_modified_byTouser           smalltalk_testing_phrases[]      @relation("smalltalk_testing_phrases_modified_byTouser")
+  smalltalk_testing_phrases_smalltalk_testing_phrases_deleted_byTouser            smalltalk_testing_phrases[]      @relation("smalltalk_testing_phrases_deleted_byTouser")
+  smalltalk_training_phrases                                                      smalltalk_training_phrases[]
+  smalltalk_training_phrases_smalltalk_training_phrases_modified_byTouser         smalltalk_training_phrases[]     @relation("smalltalk_training_phrases_modified_byTouser")
+  smalltalk_training_phrases_smalltalk_training_phrases_deleted_byTouser          smalltalk_training_phrases[]     @relation("smalltalk_training_phrases_deleted_byTouser")
+  smalltalks                                                                      smalltalks[]
+  smalltalks_smalltalks_modified_byTouser                                         smalltalks[]                     @relation("smalltalks_modified_byTouser")
+  smalltalks_smalltalks_deleted_byTouser                                          smalltalks[]                     @relation("smalltalks_deleted_byTouser")
+  user_user_added_byTouser                                                        user?                            @relation("user_added_byTouser", fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_1")
+  other_user_user_added_byTouser                                                  user[]                           @relation("user_added_byTouser")
+  user_user_blocked_byTouser                                                      user?                            @relation("user_blocked_byTouser", fields: [blocked_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_2")
+  other_user_user_blocked_byTouser                                                user[]                           @relation("user_blocked_byTouser")
+
+  @@index([added_by], map: "fk_user_1_idx")
+  @@index([blocked_by], map: "fk_user_2_idx")
+}
+
+model entities {
+  id                              Int                              @id @default(autoincrement())
+  color                           String                           @unique(map: "entity_color_UNIQUE") @db.VarChar(450)
+  normalized_name                 String                           @unique(map: "entity_normalized_name_UNIQUE") @db.VarChar(450)
+  name                            String                           @unique(map: "entity_name_UNIQUE") @db.VarChar(450)
+  added_by                        Int
+  active                          Boolean                          @default(true)
+  added_date                      DateTime                         @default(now()) @db.DateTime(0)
+  modified_by                     Int?
+  modified_date                   DateTime?                        @default(now()) @db.DateTime(0)
+  deleted_by                      Int?
+  deleted_date                    DateTime?                        @default(now()) @db.DateTime(0)
+  enities_permission              enities_permission[]
+  user                            user                             @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entities_1")
+  user_entities_modified_byTouser user?                            @relation("entities_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entities_2")
+  user_entities_deleted_byTouser  user?                            @relation("entities_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entities_3")
+  entity_value                    entity_value[]
+  entity_value_synonym            entity_value_synonym[]
+  intent_entities                 intent_entities[]
+  intent_testing_phrase_expected  intent_testing_phrase_expected[]
+
+  @@index([added_by], map: "fk_entities_1_idx")
+  @@index([modified_by], map: "fk_entities_2_idx")
+  @@index([deleted_by], map: "fk_entities_3_idx")
+}
+
+model entity_value {
+  id                                  Int                              @id @default(autoincrement())
+  entity_id                           Int
+  normalized_keyword                  String                           @db.Text
+  keyword                             String                           @db.Text
+  added_by                            Int
+  added_date                          DateTime                         @default(now()) @db.DateTime(0)
+  active                              Boolean                          @default(true)
+  modified_by                         Int?
+  modified_date                       DateTime?                        @default(now()) @db.DateTime(0)
+  deleted_by                          Int?
+  deleted_date                        DateTime?                        @default(now()) @db.DateTime(0)
+  entities                            entities                         @relation(fields: [entity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_1")
+  user                                user                             @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_2")
+  user_entity_value_modified_byTouser user?                            @relation("entity_value_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_3")
+  user_entity_value_deleted_byTouser  user?                            @relation("entity_value_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_4")
+  entity_value_synonym                entity_value_synonym[]
+  intent_testing_phrase_expected      intent_testing_phrase_expected[]
+
+  @@index([entity_id], map: "fk_entity_value_1_idx")
+  @@index([added_by], map: "fk_entity_value_2_idx")
+  @@index([modified_by], map: "fk_entity_value_3_idx")
+  @@index([deleted_by], map: "fk_entity_value_4_idx")
+}
+
+model entity_value_synonym {
+  id                                          Int          @id @default(autoincrement())
+  entity_id                                   Int
+  entity_value_id                             Int
+  normalized_synonym                          String       @db.Text
+  synonym                                     String       @db.Text
+  added_by                                    Int
+  added_date                                  DateTime     @default(now()) @db.DateTime(0)
+  active                                      Boolean      @default(true)
+  modified_by                                 Int?
+  modified_date                               DateTime?    @default(now()) @db.DateTime(0)
+  deleted_by                                  Int?
+  deleted_date                                DateTime?    @default(now()) @db.DateTime(0)
+  entities                                    entities     @relation(fields: [entity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_synonym_1")
+  user                                        user         @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_synonym_2")
+  entity_value                                entity_value @relation(fields: [entity_value_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_synonym_3")
+  user_entity_value_synonym_modified_byTouser user?        @relation("entity_value_synonym_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_synonym_4")
+  user_entity_value_synonym_deleted_byTouser  user?        @relation("entity_value_synonym_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_entity_value_synonym_5")
+
+  @@index([entity_id], map: "fk_entity_value_synonym_1_idx")
+  @@index([added_by], map: "fk_entity_value_synonym_2_idx")
+  @@index([entity_value_id], map: "fk_entity_value_synonym_3_idx")
+  @@index([modified_by], map: "fk_entity_value_synonym_4_idx")
+  @@index([deleted_by], map: "fk_entity_value_synonym_5_idx")
+}
+
+model intent_entities {
+  id                                     Int       @id @default(autoincrement())
+  intent_id                              Int
+  entity_id                              Int
+  added_by                               Int
+  added_date                             DateTime  @default(now()) @db.DateTime(0)
+  active                                 Boolean   @default(true)
+  modified_by                            Int?
+  modified_date                          DateTime? @default(now()) @db.DateTime(0)
+  deleted_by                             Int?
+  deleted_date                           DateTime? @default(now()) @db.DateTime(0)
+  intents                                intents   @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_entities_1")
+  user                                   user      @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_entities_2")
+  entities                               entities  @relation(fields: [entity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_entities_3")
+  user_intent_entities_modified_byTouser user?     @relation("intent_entities_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_entities_4")
+  user_intent_entities_deleted_byTouser  user?     @relation("intent_entities_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_entities_5")
+
+  @@unique([intent_id, entity_id], map: "intent_entity_UNIQUE")
+  @@index([added_by], map: "fk_intent_entities_1_idx")
+  @@index([intent_id], map: "fk_intent_entities_2_idx")
+  @@index([entity_id], map: "fk_intent_entities_3_idx")
+  @@index([modified_by], map: "fk_intent_entities_4_idx")
+  @@index([deleted_by], map: "fk_intent_entities_5_idx")
+}
+
+model intent_flows {
+  id                                  Int                   @id @default(autoincrement())
+  intent_id                           Int
+  normalized_text                     String                @db.Text
+  text                                String                @db.Text
+  added_by                            Int
+  added_date                          DateTime              @default(now()) @db.DateTime(0)
+  active                              Boolean               @default(true)
+  modified_by                         Int?
+  modified_date                       DateTime?             @default(now()) @db.DateTime(0)
+  deleted_by                          Int?
+  deleted_date                        DateTime?             @default(now()) @db.DateTime(0)
+  intents                             intents               @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_flows_1")
+  user                                user                  @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_flows_2")
+  user_intent_flows_modified_byTouser user?                 @relation("intent_flows_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_flows_3")
+  user_intent_flows_deleted_byTouser  user?                 @relation("intent_flows_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_flows_4")
+  intent_keyword_flow                 intent_keyword_flow[]
+
+  @@index([added_by], map: "fk_intent_flows_1_idx")
+  @@index([intent_id], map: "fk_intent_flows_2_idx")
+  @@index([modified_by], map: "fk_intent_flows_3_idx")
+  @@index([deleted_by], map: "fk_intent_flows_4_idx")
+}
+
+model intent_keyword {
+  id                                    Int                   @id @default(autoincrement())
+  intent_id                             Int
+  normalized_keyword                    String                @db.Text
+  keyword                               String                @db.Text
+  original_word                         Boolean               @default(false)
+  added_by                              Int
+  added_date                            DateTime              @default(now()) @db.DateTime(0)
+  active                                Boolean               @default(true)
+  modified_by                           Int?
+  modified_date                         DateTime?             @default(now()) @db.DateTime(0)
+  deleted_by                            Int?
+  deleted_date                          DateTime?             @default(now()) @db.DateTime(0)
+  intents                               intents               @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_1")
+  user                                  user                  @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_2")
+  user_intent_keyword_modified_byTouser user?                 @relation("intent_keyword_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_3")
+  user_intent_keyword_deleted_byTouser  user?                 @relation("intent_keyword_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_4")
+  intent_keyword_flow                   intent_keyword_flow[]
+
+  @@index([added_by], map: "fk_intent_keyword_1_idx")
+  @@index([intent_id], map: "fk_intent_keyword_2_idx")
+  @@index([modified_by], map: "fk_intent_keyword_3_idx")
+  @@index([deleted_by], map: "fk_intent_keyword_4_idx")
+}
+
+model intent_keyword_flow {
+  id                                         Int            @id @default(autoincrement())
+  intent_id                                  Int
+  flow_id                                    Int
+  keyword_id                                 Int
+  added_by                                   Int
+  added_date                                 DateTime       @default(now()) @db.DateTime(0)
+  modified_by                                Int?
+  modified_date                              DateTime?      @default(now()) @db.DateTime(0)
+  deleted_by                                 Int?
+  deleted_date                               DateTime?      @default(now()) @db.DateTime(0)
+  intents                                    intents        @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_flow_1")
+  intent_flows                               intent_flows   @relation(fields: [flow_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_flow_2")
+  intent_keyword                             intent_keyword @relation(fields: [keyword_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_flow_3")
+  user                                       user           @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_flow_4")
+  user_intent_keyword_flow_modified_byTouser user?          @relation("intent_keyword_flow_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_flow_5")
+  user_intent_keyword_flow_deleted_byTouser  user?          @relation("intent_keyword_flow_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_keyword_flow_6")
+
+  @@index([intent_id], map: "fk_intent_keyword_flow_1_idx")
+  @@index([flow_id], map: "fk_intent_keyword_flow_2_idx")
+  @@index([keyword_id], map: "fk_intent_keyword_flow_3_idx")
+  @@index([added_by], map: "fk_intent_keyword_flow_4_idx")
+  @@index([modified_by], map: "fk_intent_keyword_flow_5_idx")
+  @@index([deleted_by], map: "fk_intent_keyword_flow_6_idx")
+}
+
+model intent_permission {
+  id                                      Int      @id @default(autoincrement())
+  user_id                                 Int
+  intent_id                               Int
+  granted_by                              Int
+  granted_date                            DateTime @default(now()) @db.DateTime(0)
+  user_intent_permission_user_idTouser    user     @relation("intent_permission_user_idTouser", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_permission_1")
+  user_intent_permission_granted_byTouser user     @relation("intent_permission_granted_byTouser", fields: [granted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_permission_2")
+  intents                                 intents  @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_permission_3")
+
+  @@unique([user_id, intent_id], map: "user_intent_UNIQUE")
+  @@index([user_id], map: "fk_intent_permission_1_idx")
+  @@index([granted_by], map: "fk_intent_permission_2_idx")
+  @@index([intent_id], map: "fk_intent_permission_3_idx")
+}
+
+model intent_testing_phrase_expected {
+  id                                                    Int                    @id @default(autoincrement())
+  entity_value_id                                       Int
+  entity_id                                             Int
+  intent_id                                             Int
+  intent_testing_phrase_id                              Int
+  added_by                                              Int
+  added_date                                            DateTime               @default(now()) @db.DateTime(0)
+  active                                                Boolean                @default(true)
+  modified_by                                           Int?
+  modified_date                                         DateTime?              @default(now()) @db.DateTime(0)
+  deleted_by                                            Int?
+  deleted_date                                          DateTime?              @default(now()) @db.DateTime(0)
+  user                                                  user                   @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_1")
+  intents                                               intents                @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_2")
+  entities                                              entities               @relation(fields: [entity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_3")
+  entity_value                                          entity_value           @relation(fields: [entity_value_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_4")
+  intent_testing_phrases                                intent_testing_phrases @relation(fields: [intent_testing_phrase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_5")
+  user_intent_testing_phrase_expected_modified_byTouser user?                  @relation("intent_testing_phrase_expected_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_6")
+  user_intent_testing_phrase_expected_deleted_byTouser  user?                  @relation("intent_testing_phrase_expected_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrase_expected_7")
+
+  @@index([added_by], map: "fk_intent_testing_phrase_expected_1_idx")
+  @@index([intent_id], map: "fk_intent_testing_phrase_expected_2_idx")
+  @@index([entity_id], map: "fk_intent_testing_phrase_expected_3_idx")
+  @@index([entity_value_id], map: "fk_intent_testing_phrase_expected_4_idx")
+  @@index([intent_testing_phrase_id], map: "fk_intent_testing_phrase_expected_5_idx")
+  @@index([intent_testing_phrase_id, entity_id, entity_value_id], map: "unique_expected_idx")
+  @@index([modified_by], map: "fk_intent_testing_phrase_expected_6_idx")
+  @@index([deleted_by], map: "fk_intent_testing_phrase_expected_7_idx")
+}
+
+model intent_testing_phrases {
+  id                                            Int                              @id @default(autoincrement())
+  intent_id                                     Int
+  normalized_text                               String                           @db.Text
+  text                                          String                           @db.Text
+  added_by                                      Int
+  added_date                                    DateTime                         @default(now()) @db.DateTime(0)
+  active                                        Boolean                          @default(true)
+  modified_by                                   Int?
+  modified_date                                 DateTime?                        @default(now()) @db.DateTime(0)
+  deleted_by                                    Int?
+  deleted_date                                  DateTime?                        @default(now()) @db.DateTime(0)
+  intent_testing_phrase_expected                intent_testing_phrase_expected[]
+  user                                          user                             @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrases_1")
+  intents                                       intents                          @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrases_2")
+  user_intent_testing_phrases_modified_byTouser user?                            @relation("intent_testing_phrases_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrases_3")
+  user_intent_testing_phrases_deleted_byTouser  user?                            @relation("intent_testing_phrases_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_testing_phrases_4")
+
+  @@index([added_by], map: "fk_intent_testing_phrases_1_idx")
+  @@index([intent_id], map: "fk_intent_testing_phrases_2_idx")
+  @@index([modified_by], map: "fk_intent_testing_phrases_3_idx")
+  @@index([deleted_by], map: "fk_intent_testing_phrases_4_idx")
+}
+
+model intent_training_phrases {
+  id                                             Int       @id @default(autoincrement())
+  intent_id                                      Int
+  normalized_text                                String    @db.Text
+  text                                           String    @db.Text
+  added_by                                       Int
+  added_date                                     DateTime  @default(now()) @db.DateTime(0)
+  active                                         Boolean   @default(true)
+  modified_by                                    Int?
+  modified_date                                  DateTime? @default(now()) @db.DateTime(0)
+  deleted_by                                     Int?
+  deleted_date                                   DateTime? @default(now()) @db.DateTime(0)
+  intents                                        intents   @relation(fields: [intent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_training_phrases_1")
+  user                                           user      @relation(fields: [added_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_training_phrases_2")
+  user_intent_training_phrases_modified_byTouser user?     @relation("intent_training_phrases_modified_byTouser", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_training_phrases_3")
+  user_intent_training_phrases_deleted_byTouser  user?     @relation("intent_training_phrases_deleted_byTouser", fields: [deleted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_intent_training_phrases_4")
+
+  @@index([added_by], map: "fk_intent_training_phrases_1_idx")
+  @@index([intent_id], map: "fk_intent_training_phrases_2_idx")
+  @@index([modified_by], map: "fk_intent_training_phrases_3_idx")
+  @@index([deleted_by], map: "fk_intent_training_phrases_4_idx")
+}
+
+model enities_permission {
+  id                                       Int      @id @default(autoincrement())
+  user_id                                  Int
+  entity_id                                Int
+  granted_by                               Int
+  granted_date                             DateTime @default(now()) @db.DateTime(0)
+  user_enities_permission_user_idTouser    user     @relation("enities_permission_user_idTouser", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_enities_permission_1")
+  user_enities_permission_granted_byTouser user     @relation("enities_permission_granted_byTouser", fields: [granted_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_enities_permission_2")
+  entities                                 entities @relation(fields: [entity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_enities_permission_3")
+
+  @@unique([user_id, entity_id], map: "user_entity_UNIQUE")
+  @@index([user_id], map: "fk_enities_permission_1_idx")
+  @@index([granted_by], map: "fk_enities_permission_2_idx")
+  @@index([entity_id], map: "fk_enities_permission_4_idx")
+}
+
+enum user_user_type {
+  ADMIN
+  USER
+}
